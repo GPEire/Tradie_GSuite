@@ -14,6 +14,10 @@ from app.schemas.gmail import (
     LabelCreateRequest, LabelResponse, ModifyMessageRequest,
     GmailProfileResponse, QuotaInfoResponse
 )
+from app.schemas.email import (
+    ParsedEmailResponse, EmailFetchRequest, EmailFetchResponse,
+    EmailListResponse, EmailMetadata
+)
 from app.services.gmail import (
     GmailService, get_gmail_service,
     GmailAPIError, GmailRateLimitError, GmailQuotaExceededError
@@ -213,6 +217,190 @@ async def get_quota_info(
     try:
         quota_info = gmail_service.get_quota_info()
         return QuotaInfoResponse(**quota_info)
+    except GmailAPIError as e:
+        raise HTTPException(
+            status_code=e.status_code or status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=e.message
+        )
+
+
+@router.post("/emails/fetch", response_model=EmailFetchResponse)
+async def fetch_emails_parsed(
+    request: EmailFetchRequest,
+    gmail_service: GmailService = Depends(get_gmail_service_for_user)
+):
+    """Fetch and parse emails with metadata extraction"""
+    try:
+        result = gmail_service.fetch_messages_parsed(
+            query=request.query,
+            max_results=request.max_results,
+            page_token=request.page_token,
+            include_body=request.include_body
+        )
+        
+        # Convert to response format
+        parsed_emails = []
+        for email_data in result["emails"]:
+            # Build metadata
+            metadata = EmailMetadata(
+                id=email_data["id"],
+                thread_id=email_data["thread_id"],
+                label_ids=email_data["label_ids"],
+                snippet=email_data["snippet"],
+                subject=email_data["subject"],
+                from_address=email_data["from"],
+                to_addresses=email_data["to"],
+                cc_addresses=email_data.get("cc", []),
+                bcc_addresses=email_data.get("bcc", []),
+                reply_to=email_data.get("reply_to"),
+                date=email_data.get("date"),
+                internal_date=email_data.get("internal_date"),
+                size_estimate=email_data.get("size_estimate", 0),
+                history_id=email_data.get("history_id", ""),
+                in_reply_to=email_data.get("in_reply_to"),
+                references=email_data.get("references")
+            )
+            
+            parsed_email = ParsedEmailResponse(
+                metadata=metadata,
+                body_text=email_data.get("body_text", ""),
+                body_html=email_data.get("body_html"),
+                attachments=email_data.get("attachments", [])
+            )
+            parsed_emails.append(parsed_email)
+        
+        return EmailFetchResponse(
+            emails=parsed_emails,
+            next_page_token=result.get("next_page_token"),
+            result_size_estimate=result.get("result_size_estimate", 0)
+        )
+        
+    except GmailRateLimitError as e:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=e.message,
+            headers={"Retry-After": str(e.retry_after) if e.retry_after else "60"}
+        )
+    except GmailQuotaExceededError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=e.message
+        )
+    except GmailAPIError as e:
+        raise HTTPException(
+            status_code=e.status_code or status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=e.message
+        )
+
+
+@router.get("/emails/{message_id}/parsed", response_model=ParsedEmailResponse)
+async def get_email_parsed(
+    message_id: str,
+    gmail_service: GmailService = Depends(get_gmail_service_for_user)
+):
+    """Get a specific email with full parsing (metadata + body + attachments)"""
+    try:
+        email_data = gmail_service.fetch_message_parsed(message_id)
+        
+        # Build metadata
+        metadata = EmailMetadata(
+            id=email_data["id"],
+            thread_id=email_data["thread_id"],
+            label_ids=email_data["label_ids"],
+            snippet=email_data["snippet"],
+            subject=email_data["subject"],
+            from_address=email_data["from"],
+            to_addresses=email_data["to"],
+            cc_addresses=email_data.get("cc", []),
+            bcc_addresses=email_data.get("bcc", []),
+            reply_to=email_data.get("reply_to"),
+            date=email_data.get("date"),
+            internal_date=email_data.get("internal_date"),
+            size_estimate=email_data.get("size_estimate", 0),
+            history_id=email_data.get("history_id", ""),
+            in_reply_to=email_data.get("in_reply_to"),
+            references=email_data.get("references")
+        )
+        
+        return ParsedEmailResponse(
+            metadata=metadata,
+            body_text=email_data.get("body_text", ""),
+            body_html=email_data.get("body_html"),
+            attachments=email_data.get("attachments", [])
+        )
+        
+    except GmailRateLimitError as e:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=e.message,
+            headers={"Retry-After": str(e.retry_after) if e.retry_after else "60"}
+        )
+    except GmailQuotaExceededError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=e.message
+        )
+    except GmailAPIError as e:
+        raise HTTPException(
+            status_code=e.status_code or status.HTTP_404_NOT_FOUND if e.status_code == 404 else status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=e.message
+        )
+
+
+@router.post("/emails/list", response_model=EmailListResponse)
+async def list_emails_metadata(
+    request: EmailFetchRequest,
+    gmail_service: GmailService = Depends(get_gmail_service_for_user)
+):
+    """List emails with metadata only (no body content)"""
+    try:
+        result = gmail_service.fetch_messages_parsed(
+            query=request.query,
+            max_results=request.max_results,
+            page_token=request.page_token,
+            include_body=False  # Only metadata
+        )
+        
+        # Convert to metadata-only format
+        email_metadata_list = []
+        for email_data in result["emails"]:
+            metadata = EmailMetadata(
+                id=email_data["id"],
+                thread_id=email_data["thread_id"],
+                label_ids=email_data["label_ids"],
+                snippet=email_data["snippet"],
+                subject=email_data["subject"],
+                from_address=email_data["from"],
+                to_addresses=email_data["to"],
+                cc_addresses=email_data.get("cc", []),
+                bcc_addresses=email_data.get("bcc", []),
+                reply_to=email_data.get("reply_to"),
+                date=email_data.get("date"),
+                internal_date=email_data.get("internal_date"),
+                size_estimate=email_data.get("size_estimate", 0),
+                history_id=email_data.get("history_id", ""),
+                in_reply_to=email_data.get("in_reply_to"),
+                references=email_data.get("references")
+            )
+            email_metadata_list.append(metadata)
+        
+        return EmailListResponse(
+            emails=email_metadata_list,
+            next_page_token=result.get("next_page_token"),
+            result_size_estimate=result.get("result_size_estimate", 0)
+        )
+        
+    except GmailRateLimitError as e:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=e.message,
+            headers={"Retry-After": str(e.retry_after) if e.retry_after else "60"}
+        )
+    except GmailQuotaExceededError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=e.message
+        )
     except GmailAPIError as e:
         raise HTTPException(
             status_code=e.status_code or status.HTTP_500_INTERNAL_SERVER_ERROR,

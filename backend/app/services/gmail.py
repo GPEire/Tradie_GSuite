@@ -14,6 +14,7 @@ import logging
 from collections import defaultdict
 from app.models.user import User
 from app.services.auth import decrypt_token, refresh_user_credentials
+from app.services.email_parser import parse_gmail_message
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
@@ -285,6 +286,40 @@ class GmailService:
         return {
             "quota_limits": GMAIL_QUOTA_LIMITS,
             "rate_limit_status": dict(_rate_limit_tracker)
+        }
+    
+    def fetch_message_parsed(self, message_id: str, format: str = "full") -> Dict[str, Any]:
+        """Get a message and parse it into structured format"""
+        message = self.get_message(message_id, format=format)
+        return parse_gmail_message(message)
+    
+    def fetch_messages_parsed(self, query: str = "", max_results: int = 10, 
+                             page_token: Optional[str] = None, include_body: bool = True) -> Dict[str, Any]:
+        """List messages and parse them into structured format"""
+        # First, get message list
+        response = self.list_messages(query=query, max_results=max_results, page_token=page_token)
+        
+        messages = response.get('messages', [])
+        parsed_emails = []
+        
+        # Fetch and parse each message
+        for msg in messages:
+            try:
+                if include_body:
+                    parsed = self.fetch_message_parsed(msg['id'])
+                else:
+                    # Get just metadata
+                    message = self.get_message(msg['id'], format="metadata")
+                    parsed = parse_gmail_message(message)
+                parsed_emails.append(parsed)
+            except Exception as e:
+                logger.warning(f"Failed to parse message {msg.get('id')}: {e}")
+                continue
+        
+        return {
+            "emails": parsed_emails,
+            "next_page_token": response.get('nextPageToken'),
+            "result_size_estimate": response.get('resultSizeEstimate', 0)
         }
 
 

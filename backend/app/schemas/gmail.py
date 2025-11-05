@@ -47,6 +47,13 @@ class LabelCreateRequest(BaseModel):
     message_list_visibility: Optional[str] = "show"
 
 
+class LabelUpdateRequest(BaseModel):
+    """Request schema for updating a label"""
+    name: Optional[str] = None
+    label_list_visibility: Optional[str] = None
+    message_list_visibility: Optional[str] = None
+
+
 class LabelResponse(BaseModel):
     """Response schema for label"""
     id: str
@@ -54,6 +61,22 @@ class LabelResponse(BaseModel):
     message_list_visibility: Optional[str] = None
     label_list_visibility: Optional[str] = None
     type: Optional[str] = None
+    color: Optional[Dict[str, Any]] = None
+    text_color: Optional[str] = None
+    background_color: Optional[str] = None
+
+
+class BatchModifyMessagesRequest(BaseModel):
+    """Request schema for batch modifying message labels"""
+    message_ids: List[str]
+    add_label_ids: Optional[List[str]] = None
+    remove_label_ids: Optional[List[str]] = None
+
+
+class ThreadModifyRequest(BaseModel):
+    """Request schema for modifying thread labels"""
+    thread_id: str
+    label_id: str
 
 
 class ModifyMessageRequest(BaseModel):

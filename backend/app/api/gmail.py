@@ -11,8 +11,9 @@ from app.models.user import User
 from app.middleware.auth import get_current_active_user
 from app.schemas.gmail import (
     MessageListRequest, MessageListResponse, MessageRequest,
-    LabelCreateRequest, LabelResponse, ModifyMessageRequest,
-    GmailProfileResponse, QuotaInfoResponse
+    LabelCreateRequest, LabelUpdateRequest, LabelResponse,
+    ModifyMessageRequest, BatchModifyMessagesRequest,
+    ThreadModifyRequest, GmailProfileResponse, QuotaInfoResponse
 )
 from app.schemas.email import (
     ParsedEmailResponse, EmailFetchRequest, EmailFetchResponse,
@@ -182,6 +183,110 @@ async def create_label(
         )
 
 
+@router.get("/labels/{label_id}", response_model=LabelResponse)
+async def get_label(
+    label_id: str,
+    gmail_service: GmailService = Depends(get_gmail_service_for_user)
+):
+    """Get a specific label by ID"""
+    try:
+        label = gmail_service.get_label(label_id)
+        return LabelResponse(**label)
+    except GmailRateLimitError as e:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=e.message,
+            headers={"Retry-After": str(e.retry_after) if e.retry_after else "60"}
+        )
+    except GmailAPIError as e:
+        raise HTTPException(
+            status_code=e.status_code or status.HTTP_404_NOT_FOUND if e.status_code == 404 else status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=e.message
+        )
+
+
+@router.patch("/labels/{label_id}", response_model=LabelResponse)
+async def update_label(
+    label_id: str,
+    request: LabelUpdateRequest,
+    gmail_service: GmailService = Depends(get_gmail_service_for_user)
+):
+    """Update an existing Gmail label"""
+    try:
+        label = gmail_service.update_label(
+            label_id=label_id,
+            label_name=request.name,
+            label_list_visibility=request.label_list_visibility,
+            message_list_visibility=request.message_list_visibility
+        )
+        return LabelResponse(**label)
+    except GmailRateLimitError as e:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=e.message,
+            headers={"Retry-After": str(e.retry_after) if e.retry_after else "60"}
+        )
+    except GmailAPIError as e:
+        if e.status_code == 400:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=e.message
+            )
+        raise HTTPException(
+            status_code=e.status_code or status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=e.message
+        )
+
+
+@router.delete("/labels/{label_id}")
+async def delete_label(
+    label_id: str,
+    gmail_service: GmailService = Depends(get_gmail_service_for_user)
+):
+    """Delete a Gmail label"""
+    try:
+        gmail_service.delete_label(label_id)
+        return {"message": "Label deleted successfully"}
+    except GmailRateLimitError as e:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=e.message,
+            headers={"Retry-After": str(e.retry_after) if e.retry_after else "60"}
+        )
+    except GmailAPIError as e:
+        if e.status_code == 400:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot delete system labels (INBOX, SENT, etc.)"
+            )
+        raise HTTPException(
+            status_code=e.status_code or status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=e.message
+        )
+
+
+@router.post("/labels/find-or-create", response_model=LabelResponse)
+async def find_or_create_label(
+    request: LabelCreateRequest,
+    gmail_service: GmailService = Depends(get_gmail_service_for_user)
+):
+    """Find existing label by name or create if it doesn't exist"""
+    try:
+        label = gmail_service.find_or_create_label(request.name)
+        return LabelResponse(**label)
+    except GmailRateLimitError as e:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=e.message,
+            headers={"Retry-After": str(e.retry_after) if e.retry_after else "60"}
+        )
+    except GmailAPIError as e:
+        raise HTTPException(
+            status_code=e.status_code or status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=e.message
+        )
+
+
 @router.post("/messages/{message_id}/modify")
 async def modify_message(
     message_id: str,
@@ -196,6 +301,78 @@ async def modify_message(
             remove_label_ids=request.remove_label_ids
         )
         return result
+    except GmailRateLimitError as e:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=e.message,
+            headers={"Retry-After": str(e.retry_after) if e.retry_after else "60"}
+        )
+    except GmailAPIError as e:
+        raise HTTPException(
+            status_code=e.status_code or status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=e.message
+        )
+
+
+@router.post("/messages/batch-modify")
+async def batch_modify_messages(
+    request: BatchModifyMessagesRequest,
+    gmail_service: GmailService = Depends(get_gmail_service_for_user)
+):
+    """Modify labels for multiple messages at once"""
+    try:
+        result = gmail_service.batch_modify_messages(
+            message_ids=request.message_ids,
+            add_label_ids=request.add_label_ids,
+            remove_label_ids=request.remove_label_ids
+        )
+        return {"message": "Messages modified successfully", "count": len(request.message_ids)}
+    except GmailRateLimitError as e:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=e.message,
+            headers={"Retry-After": str(e.retry_after) if e.retry_after else "60"}
+        )
+    except GmailAPIError as e:
+        raise HTTPException(
+            status_code=e.status_code or status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=e.message
+        )
+
+
+@router.post("/threads/{thread_id}/apply-label")
+async def apply_label_to_thread(
+    thread_id: str,
+    label_id: str,
+    gmail_service: GmailService = Depends(get_gmail_service_for_user)
+):
+    """Apply a label to all messages in a thread"""
+    try:
+        result = gmail_service.apply_label_to_thread(thread_id, label_id)
+        return {"message": "Label applied to thread successfully"}
+    except GmailRateLimitError as e:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=e.message,
+            headers={"Retry-After": str(e.retry_after) if e.retry_after else "60"}
+        )
+    except GmailAPIError as e:
+        raise HTTPException(
+            status_code=e.status_code or status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=e.message
+        )
+
+
+@router.post("/threads/{thread_id}/remove-label")
+async def remove_label_from_thread(
+    thread_id: str,
+    label_id: str,
+    gmail_service: GmailService = Depends(get_gmail_service_for_user)
+):
+    """Remove a label from all messages in a thread"""
+    try:
+        result = gmail_service.remove_label_from_thread(thread_id, label_id)
+        return {"message": "Label removed from thread successfully"}
     except GmailRateLimitError as e:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,

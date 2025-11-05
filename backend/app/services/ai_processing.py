@@ -95,8 +95,20 @@ class AIProcessingService:
             # Extract entities
             entities = entity_service.extract_from_email(email_data)
             
-            # Get existing projects (simplified - will be enhanced in TASK-019)
-            existing_projects = []  # TODO: Fetch from database in TASK-019
+            # Get existing projects from database
+            from app.services.project_detection import get_project_detection_service
+            detection_service = get_project_detection_service(user, self.db)
+            projects = detection_service.get_all_projects(status="active")
+            existing_projects = [
+                {
+                    "id": p.project_id,
+                    "name": p.project_name,
+                    "address": p.address,
+                    "job_numbers": p.job_numbers or [],
+                    "client_email": p.client_email
+                }
+                for p in projects
+            ]
             
             # Group email (for now, just extract entities - full grouping in batch)
             result_data = {

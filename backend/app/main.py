@@ -12,6 +12,7 @@ from app.config import settings
 from app.database import init_db
 from app.api.auth import router as auth_router
 from app.api.users import router as users_router
+from app.api.gmail import router as gmail_router
 
 # Load environment variables
 load_dotenv()
@@ -48,6 +49,7 @@ app.add_middleware(
 # Include API routers
 app.include_router(auth_router)
 app.include_router(users_router)
+app.include_router(gmail_router)
 
 @app.get("/")
 async def root():

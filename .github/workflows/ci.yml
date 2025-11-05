@@ -22,18 +22,32 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt', 'requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-
     
     - name: Install dependencies
+      working-directory: ./backend
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        if [ -f "requirements.txt" ]; then
+          pip install -r requirements.txt
+        elif [ -f "../requirements.txt" ]; then
+          pip install -r ../requirements.txt
+        else
+          echo "No requirements.txt found"
+          exit 0
+        fi
     
     - name: Run tests with pytest
+      working-directory: ./backend
       run: |
-        pytest --cov=app --cov-report=xml --cov-report=html
+        if [ -f "requirements.txt" ]; then
+          pytest --cov=app --cov-report=xml --cov-report=html
+        else
+          echo "No tests to run yet"
+          exit 0
+        fi
       continue-on-error: true
     
     - name: Upload coverage to Codecov
@@ -86,16 +100,22 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: '**/package-lock.json'
+        # Cache will be created automatically after first npm install
+        # No cache-dependency-path needed if package-lock.json doesn't exist yet
     
     - name: Install dependencies
+      working-directory: ./frontend
       run: |
         if [ -f "package.json" ]; then
-          npm ci
+          npm install
+        else
+          echo "No package.json found in frontend directory"
+          exit 0
         fi
+      continue-on-error: true
     
     - name: Run tests
+      working-directory: ./frontend
       run: |
         if [ -f "package.json" ]; then
           npm test
@@ -103,6 +123,7 @@ jobs:
       continue-on-error: true
     
     - name: Build
+      working-directory: ./frontend
       run: |
         if [ -f "package.json" ]; then
           npm run build

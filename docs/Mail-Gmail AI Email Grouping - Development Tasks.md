@@ -87,38 +87,53 @@
 ### Phase 2: AI/NLP Core Development (Weeks 3-5)
 
 #### Epic 2.1: AI Model Integration
-- [ ] **TASK-008:** Research and select AI/LLM service provider
-  - Evaluate OpenAI GPT-4, Anthropic Claude, Google Vertex AI
-  - Compare pricing, latency, and accuracy
-  - Select optimal provider for project detection
-  - **Priority:** High | **Effort:** 2 days
+- [x] **TASK-008:** Research and select AI/LLM service provider ✅
+  - ✅ Evaluate OpenAI GPT-4, Anthropic Claude, Google Vertex AI
+  - ✅ Compare pricing, latency, and accuracy
+  - ✅ Select optimal provider for project detection: **OpenAI GPT-4** (CONFIRMED)
+  - ✅ Configure OpenAI API key in environment variables
+  - ✅ Update configuration to default to OpenAI
+  - **Priority:** High | **Effort:** 2 days | **Status:** COMPLETE
 
-- [ ] **TASK-009:** Design and implement prompt engineering for project detection
-  - Create prompts for project name extraction
-  - Design prompts for address/job number detection
-  - Build prompts for content similarity analysis
-  - Test and iterate on prompt effectiveness
-  - **Priority:** High | **Effort:** 5 days
+- [x] **TASK-009:** Design and implement prompt engineering for project detection ✅
+  - ✅ Create prompts for project name extraction
+  - ✅ Design prompts for address/job number detection (Australian addresses)
+  - ✅ Build prompts for content similarity analysis
+  - ✅ Create comprehensive entity extraction prompts
+  - ✅ Implement batch email grouping prompts
+  - ✅ Integrate OpenAI API service
+  - ✅ Add API endpoints for AI-powered extraction
+  - ✅ Create prompt effectiveness testing framework
+  - ✅ Add error handling and JSON response validation
+  - **Priority:** High | **Effort:** 5 days | **Status:** COMPLETE
 
-- [ ] **TASK-010:** Implement entity extraction pipeline
-  - Extract project names from email content
-  - Extract addresses and property information
-  - Extract job numbers and codes
-  - Extract customer/client names
-  - **Priority:** High | **Effort:** 4 days
+- [x] **TASK-010:** Implement entity extraction pipeline ✅
+  - ✅ Extract project names from email content
+  - ✅ Extract addresses and property information (Australian addresses)
+  - ✅ Extract job numbers and codes
+  - ✅ Extract customer/client names
+  - ✅ Create EntityExtractionService with batch processing
+  - ✅ Add API endpoints for entity extraction
+  - **Priority:** High | **Effort:** 4 days | **Status:** COMPLETE
 
-- [ ] **TASK-011:** Implement content similarity analysis
-  - Build semantic similarity comparison
-  - Create project matching algorithm
-  - Implement confidence scoring system
-  - **Priority:** High | **Effort:** 5 days
+- [x] **TASK-011:** Implement content similarity analysis ✅
+  - ✅ Build semantic similarity comparison using AI
+  - ✅ Create project matching algorithm
+  - ✅ Implement confidence scoring system
+  - ✅ Find matching projects from existing projects
+  - ✅ Batch comparison for multiple emails
+  - ✅ Add SimilarityService with matching logic
+  - **Priority:** High | **Effort:** 5 days | **Status:** COMPLETE
 
-- [ ] **TASK-012:** Build project grouping logic
-  - Create algorithm to group emails by project
-  - Handle multi-sender project grouping
-  - Implement thread-based grouping
-  - Handle edge cases (multiple projects, ambiguous emails)
-  - **Priority:** High | **Effort:** 6 days
+- [x] **TASK-012:** Build project grouping logic ✅
+  - ✅ Create algorithm to group emails by project
+  - ✅ Handle multi-sender project grouping (address, job number, project name matching)
+  - ✅ Implement thread-based grouping
+  - ✅ Handle edge cases (multiple projects, ambiguous emails)
+  - ✅ Split groups with multiple projects
+  - ✅ Flag low-confidence groups for review
+  - ✅ Add ProjectGroupingService with comprehensive grouping logic
+  - **Priority:** High | **Effort:** 6 days | **Status:** COMPLETE
 
 #### Epic 2.2: AI Processing Infrastructure
 - [ ] **TASK-013:** Build AI processing service architecture

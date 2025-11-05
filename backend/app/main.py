@@ -14,6 +14,8 @@ from app.api.auth import router as auth_router
 from app.api.users import router as users_router
 from app.api.gmail import router as gmail_router
 from app.api.watch import router as watch_router
+from app.api.ai import router as ai_router
+from app.api.project import router as project_router
 
 # Load environment variables
 load_dotenv()
@@ -52,6 +54,8 @@ app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(gmail_router)
 app.include_router(watch_router)
+app.include_router(ai_router)
+app.include_router(project_router)
 
 @app.get("/")
 async def root():

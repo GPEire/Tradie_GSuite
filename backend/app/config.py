@@ -37,7 +37,9 @@ class Settings(BaseSettings):
     )
     
     # AI Services
+    ai_provider: str = os.getenv("AI_PROVIDER", "openai")  # openai, anthropic, vertex
     openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
+    openai_model: str = os.getenv("OPENAI_MODEL", "gpt-4")  # gpt-4, gpt-4-turbo, gpt-3.5-turbo
     anthropic_api_key: str = os.getenv("ANTHROPIC_API_KEY", "")
     
     # Database

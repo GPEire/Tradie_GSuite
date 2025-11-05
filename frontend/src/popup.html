@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Email Grouping</title>
+  <style>
+    body {
+      width: 350px;
+      padding: 16px;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .header h1 {
+      font-size: 18px;
+      margin: 0;
+    }
+    .status {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .status.connected {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+    }
+    .status.disconnected {
+      background-color: #ffebee;
+      color: #c62828;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    button:hover {
+      background-color: #1565c0;
+    }
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>AI Email Grouping</h1>
+  </div>
+  
+  <div id="status" class="status disconnected">
+    Not connected
+  </div>
+  
+  <button id="connect-btn">Connect to Gmail</button>
+  
+  <script type="module" src="popup.tsx"></script>
+</body>
+</html>
+

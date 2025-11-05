@@ -55,8 +55,46 @@ class WatchService:
             Watch response with expiration and history_id
         """
         try:
+            # If no topic_name provided, use polling mode
+            if not topic_name:
+                # Create polling watch (no topic needed)
+                watch = self.db.query(GmailWatch).filter(
+                    GmailWatch.user_id == self.user.id,
+                    GmailWatch.is_active == True
+                ).first()
+                
+                profile = self.gmail_service.get_profile()
+                history_id = profile.get('historyId')
+                
+                if watch:
+                    watch.history_id = history_id
+                    watch.watch_type = "polling"
+                    watch.updated_at = datetime.utcnow()
+                else:
+                    watch = GmailWatch(
+                        user_id=self.user.id,
+                        history_id=history_id,
+                        expiration=datetime.utcnow() + timedelta(days=365),  # Polling doesn't expire
+                        label_ids=json.dumps(label_ids) if label_ids else None,
+                        label_filter_action=label_filter_action,
+                        is_active=True,
+                        watch_type="polling"
+                    )
+                    self.db.add(watch)
+                
+                self.db.commit()
+                self.db.refresh(watch)
+                
+                return {
+                    "historyId": history_id,
+                    "expiration": watch.expiration.isoformat(),
+                    "watch_id": watch.id,
+                    "watch_type": "polling"
+                }
+            
+            # Push notification mode (requires topic_name)
             watch_request = {
-                'topicName': topic_name or f"projects/{settings.google_client_id}/topics/gmail-notifications",
+                'topicName': topic_name,
                 'labelIds': label_ids or [],
                 'labelFilterAction': label_filter_action
             }

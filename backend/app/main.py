@@ -8,6 +8,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import os
 from dotenv import load_dotenv
+from app.config import settings
+from app.database import init_db
+from app.api.auth import router as auth_router
+from app.api.users import router as users_router
 
 # Load environment variables
 load_dotenv()
@@ -17,6 +21,9 @@ load_dotenv()
 async def lifespan(app: FastAPI):
     # Startup
     print("🚀 Starting AI Email Extension Backend...")
+    print(f"📊 Initializing database...")
+    init_db()
+    print("✅ Database initialized")
     yield
     # Shutdown
     print("🛑 Shutting down backend...")
@@ -32,11 +39,15 @@ app = FastAPI(
 # CORS middleware configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(","),
+    allow_origins=settings.allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include API routers
+app.include_router(auth_router)
+app.include_router(users_router)
 
 @app.get("/")
 async def root():
@@ -54,7 +65,7 @@ async def health_check():
         "status": "healthy",
         "service": "AI Email Extension API",
         "version": "0.1.0",
-        "environment": os.getenv("ENVIRONMENT", "development")
+        "environment": settings.environment
     }
 
 if __name__ == "__main__":

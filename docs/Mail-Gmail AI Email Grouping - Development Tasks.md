@@ -61,11 +61,15 @@
   - ✅ Create comprehensive email schemas
   - **Priority:** High | **Effort:** 3 days | **Status:** COMPLETE
 
-- [ ] **TASK-006:** Implement Gmail label management
-  - Create label creation functionality
-  - Build label application to emails
-  - Implement label deletion and modification
-  - **Priority:** High | **Effort:** 3 days
+- [x] **TASK-006:** Implement Gmail label management ✅
+  - ✅ Create label creation functionality
+  - ✅ Build label application to emails (single and batch)
+  - ✅ Implement label deletion and modification
+  - ✅ Add thread-level label operations
+  - ✅ Implement find-or-create label functionality
+  - ✅ Add batch modify messages endpoint
+  - ✅ Create comprehensive label management API
+  - **Priority:** High | **Effort:** 3 days | **Status:** COMPLETE
 
 - [ ] **TASK-007:** Implement Gmail Push notifications/webhooks
   - Set up webhook endpoint for real-time email notifications

@@ -107,25 +107,33 @@
   - ✅ Add error handling and JSON response validation
   - **Priority:** High | **Effort:** 5 days | **Status:** COMPLETE
 
-- [ ] **TASK-010:** Implement entity extraction pipeline
-  - Extract project names from email content
-  - Extract addresses and property information
-  - Extract job numbers and codes
-  - Extract customer/client names
-  - **Priority:** High | **Effort:** 4 days
+- [x] **TASK-010:** Implement entity extraction pipeline ✅
+  - ✅ Extract project names from email content
+  - ✅ Extract addresses and property information (Australian addresses)
+  - ✅ Extract job numbers and codes
+  - ✅ Extract customer/client names
+  - ✅ Create EntityExtractionService with batch processing
+  - ✅ Add API endpoints for entity extraction
+  - **Priority:** High | **Effort:** 4 days | **Status:** COMPLETE
 
-- [ ] **TASK-011:** Implement content similarity analysis
-  - Build semantic similarity comparison
-  - Create project matching algorithm
-  - Implement confidence scoring system
-  - **Priority:** High | **Effort:** 5 days
+- [x] **TASK-011:** Implement content similarity analysis ✅
+  - ✅ Build semantic similarity comparison using AI
+  - ✅ Create project matching algorithm
+  - ✅ Implement confidence scoring system
+  - ✅ Find matching projects from existing projects
+  - ✅ Batch comparison for multiple emails
+  - ✅ Add SimilarityService with matching logic
+  - **Priority:** High | **Effort:** 5 days | **Status:** COMPLETE
 
-- [ ] **TASK-012:** Build project grouping logic
-  - Create algorithm to group emails by project
-  - Handle multi-sender project grouping
-  - Implement thread-based grouping
-  - Handle edge cases (multiple projects, ambiguous emails)
-  - **Priority:** High | **Effort:** 6 days
+- [x] **TASK-012:** Build project grouping logic ✅
+  - ✅ Create algorithm to group emails by project
+  - ✅ Handle multi-sender project grouping (address, job number, project name matching)
+  - ✅ Implement thread-based grouping
+  - ✅ Handle edge cases (multiple projects, ambiguous emails)
+  - ✅ Split groups with multiple projects
+  - ✅ Flag low-confidence groups for review
+  - ✅ Add ProjectGroupingService with comprehensive grouping logic
+  - **Priority:** High | **Effort:** 6 days | **Status:** COMPLETE
 
 #### Epic 2.2: AI Processing Infrastructure
 - [ ] **TASK-013:** Build AI processing service architecture

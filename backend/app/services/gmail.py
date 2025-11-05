@@ -261,15 +261,62 @@ class GmailService:
         except HttpError as error:
             raise handle_gmail_api_error(error)
     
+    def get_label(self, label_id: str) -> Dict[str, Any]:
+        """Get a specific label by ID"""
+        try:
+            request = self.service.users().labels().get(
+                userId='me',
+                id=label_id
+            )
+            return self._execute_with_retry(request, operation_type="read")
+        except HttpError as error:
+            raise handle_gmail_api_error(error)
+    
+    def update_label(self, label_id: str, label_name: Optional[str] = None,
+                     label_list_visibility: Optional[str] = None,
+                     message_list_visibility: Optional[str] = None) -> Dict[str, Any]:
+        """Update an existing Gmail label"""
+        try:
+            label_object = {}
+            if label_name is not None:
+                label_object['name'] = label_name
+            if label_list_visibility is not None:
+                label_object['labelListVisibility'] = label_list_visibility
+            if message_list_visibility is not None:
+                label_object['messageListVisibility'] = message_list_visibility
+            
+            request = self.service.users().labels().patch(
+                userId='me',
+                id=label_id,
+                body=label_object
+            )
+            return self._execute_with_retry(request, operation_type="write")
+        except HttpError as error:
+            raise handle_gmail_api_error(error)
+    
+    def delete_label(self, label_id: str) -> None:
+        """Delete a Gmail label"""
+        try:
+            request = self.service.users().labels().delete(
+                userId='me',
+                id=label_id
+            )
+            self._execute_with_retry(request, operation_type="write")
+        except HttpError as error:
+            raise handle_gmail_api_error(error)
+    
     def modify_message(self, message_id: str, add_label_ids: Optional[List[str]] = None,
                        remove_label_ids: Optional[List[str]] = None) -> Dict[str, Any]:
-        """Modify message labels"""
+        """Modify message labels (add or remove)"""
         try:
             modify_request = {}
             if add_label_ids:
                 modify_request['addLabelIds'] = add_label_ids
             if remove_label_ids:
                 modify_request['removeLabelIds'] = remove_label_ids
+            
+            if not modify_request:
+                raise GmailAPIError("At least one of add_label_ids or remove_label_ids must be provided")
             
             request = self.service.users().messages().modify(
                 userId='me',
@@ -279,6 +326,71 @@ class GmailService:
             return self._execute_with_retry(request, operation_type="write")
         except HttpError as error:
             raise handle_gmail_api_error(error)
+    
+    def batch_modify_messages(self, message_ids: List[str], 
+                             add_label_ids: Optional[List[str]] = None,
+                             remove_label_ids: Optional[List[str]] = None) -> Dict[str, Any]:
+        """Modify labels for multiple messages at once"""
+        try:
+            modify_request = {
+                'ids': message_ids
+            }
+            if add_label_ids:
+                modify_request['addLabelIds'] = add_label_ids
+            if remove_label_ids:
+                modify_request['removeLabelIds'] = remove_label_ids
+            
+            if not add_label_ids and not remove_label_ids:
+                raise GmailAPIError("At least one of add_label_ids or remove_label_ids must be provided")
+            
+            request = self.service.users().messages().batchModify(
+                userId='me',
+                body=modify_request
+            )
+            return self._execute_with_retry(request, operation_type="write")
+        except HttpError as error:
+            raise handle_gmail_api_error(error)
+    
+    def apply_label_to_thread(self, thread_id: str, label_id: str) -> Dict[str, Any]:
+        """Apply a label to all messages in a thread"""
+        try:
+            request = self.service.users().threads().modify(
+                userId='me',
+                id=thread_id,
+                body={'addLabelIds': [label_id]}
+            )
+            return self._execute_with_retry(request, operation_type="write")
+        except HttpError as error:
+            raise handle_gmail_api_error(error)
+    
+    def remove_label_from_thread(self, thread_id: str, label_id: str) -> Dict[str, Any]:
+        """Remove a label from all messages in a thread"""
+        try:
+            request = self.service.users().threads().modify(
+                userId='me',
+                id=thread_id,
+                body={'removeLabelIds': [label_id]}
+            )
+            return self._execute_with_retry(request, operation_type="write")
+        except HttpError as error:
+            raise handle_gmail_api_error(error)
+    
+    def find_or_create_label(self, label_name: str) -> Dict[str, Any]:
+        """Find existing label by name or create if it doesn't exist"""
+        try:
+            # List all labels
+            labels = self.list_labels()
+            
+            # Search for existing label
+            for label in labels:
+                if label.get('name') == label_name:
+                    return label
+            
+            # Label doesn't exist, create it
+            return self.create_label(label_name)
+        except Exception as e:
+            logger.error(f"Error finding or creating label '{label_name}': {e}")
+            raise GmailAPIError(f"Failed to find or create label: {str(e)}")
     
     def get_quota_info(self) -> Dict[str, Any]:
         """Get current quota usage information (if available)"""

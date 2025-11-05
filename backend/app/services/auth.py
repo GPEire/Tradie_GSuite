@@ -12,9 +12,12 @@ from google_auth_oauthlib.flow import Flow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 import os
+import logging
 from app.config import settings
 from app.models.user import User, UserRole
 from app.schemas.auth import GoogleUserInfo
+
+logger = logging.getLogger(__name__)
 
 # Password hashing context (for future use if needed)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -113,4 +116,34 @@ def decrypt_token(encrypted_token: str) -> str:
     """Decrypt token from storage"""
     import base64
     return base64.b64decode(encrypted_token.encode()).decode()
+
+
+def refresh_user_credentials(user: User, db) -> bool:
+    """Refresh user's Google OAuth credentials"""
+    try:
+        if not user.refresh_token:
+            return False
+        
+        credentials = Credentials(
+            token=None,
+            refresh_token=decrypt_token(user.refresh_token),
+            token_uri="https://oauth2.googleapis.com/token",
+            client_id=settings.google_client_id,
+            client_secret=settings.google_client_secret
+        )
+        
+        credentials.refresh(Request())
+        
+        # Update stored tokens
+        user.access_token = encrypt_token(credentials.token)
+        if credentials.refresh_token:
+            user.refresh_token = encrypt_token(credentials.refresh_token)
+        if credentials.expiry:
+            user.token_expires_at = datetime.fromtimestamp(credentials.expiry)
+        
+        db.commit()
+        return True
+    except Exception as e:
+        logger.error(f"Failed to refresh credentials for user {user.email}: {e}")
+        return False
 

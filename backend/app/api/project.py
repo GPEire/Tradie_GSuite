@@ -18,7 +18,7 @@ from app.schemas.project import (
     ProjectGroupingRequest, ProjectGroupingResponse,
     BatchEntityExtractionRequest, BatchEntityExtractionResponse
 )
-from typing import Dict, Any
+from typing import Dict, List, Any
 import logging
 
 logger = logging.getLogger(__name__)

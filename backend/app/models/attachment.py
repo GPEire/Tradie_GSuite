@@ -39,8 +39,8 @@ class EmailAttachment(Base):
     drive_url = Column(String, nullable=True)
     is_uploaded_to_drive = Column(Boolean, default=False, nullable=False)
     
-    # Metadata
-    metadata = Column(JSON, nullable=True)  # Additional metadata
+    # Additional metadata (renamed from 'metadata' - reserved SQLAlchemy name)
+    additional_metadata = Column(JSON, nullable=True)  # Additional metadata
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

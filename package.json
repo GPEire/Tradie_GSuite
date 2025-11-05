@@ -1,0 +1,28 @@
+{
+  "name": "tradie-gsuite-email-extension",
+  "version": "0.1.0",
+  "description": "AI-powered email grouping extension for Gmail - Automated project email organization for builders and carpenters",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Frontend development server - to be configured'",
+    "build": "echo 'Frontend build - to be configured'",
+    "test": "echo 'Frontend tests - to be configured'",
+    "lint": "echo 'Frontend linting - to be configured'"
+  },
+  "keywords": [
+    "gmail",
+    "email",
+    "ai",
+    "chrome-extension",
+    "gmail-addon",
+    "email-grouping",
+    "project-management"
+  ],
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
+

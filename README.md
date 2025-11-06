@@ -86,17 +86,20 @@ npm --version
 Create environment configuration files:
 
 ```bash
-# Copy example environment files
-cp .env.example .env
-cp .env.backend.example .env.backend
-cp .env.frontend.example .env.frontend
+# Copy development environment example
+cp config/development.env.example .env
 ```
 
-Edit `.env` files with your configuration:
+Edit `.env` file with your configuration:
+- **OpenAI API Key** (Required - see [SETUP_API_KEYS.md](SETUP_API_KEYS.md))
 - Google OAuth credentials
-- API keys for AI services
 - Database connection strings
 - Other sensitive configuration
+
+**📋 Quick Setup:**
+1. Create `.env` in the root directory
+2. Add your OpenAI API key: `OPENAI_API_KEY=sk-proj-...`
+3. See [SETUP_API_KEYS.md](SETUP_API_KEYS.md) for detailed instructions
 
 **Note:** Never commit `.env` files to version control.
 

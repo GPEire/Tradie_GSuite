@@ -3,7 +3,7 @@ Rate Limiting and Quota Management Service
 TASK-045: Implement rate limiting and quota management
 """
 
-from typing import Dict, Optional
+from typing import Dict, Optional, Any
 from datetime import datetime, timedelta
 from collections import defaultdict
 import logging

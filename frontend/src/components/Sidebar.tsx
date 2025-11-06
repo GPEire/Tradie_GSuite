@@ -29,12 +29,14 @@ import {
   Folder as FolderIcon,
   Warning as WarningIcon,
   Refresh as RefreshIcon,
+  Settings as SettingsIcon,
 } from '@mui/icons-material';
 import { useProjectStore } from '../store/projectStore';
 import { ProjectListItem } from './ProjectListItem';
 import { ProjectView } from './ProjectView';
 import { NotificationCenter } from './NotificationCenter';
 import { useProjectNotifications } from '../hooks/useProjectNotifications';
+import { SettingsDialog } from './SettingsDialog';
 
 interface SidebarProps {
   width?: number;
@@ -57,6 +59,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ width = 320 }) => {
   } = useProjectStore();
 
   const [showProjectView, setShowProjectView] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const { notifyLowConfidence } = useProjectNotifications();
 
   useEffect(() => {
@@ -173,6 +176,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ width = 320 }) => {
             Projects
           </Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>
+            <Tooltip title="Settings">
+              <IconButton size="small" onClick={() => setShowSettings(true)}>
+                <SettingsIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
             <Tooltip title="Refresh">
               <IconButton size="small" onClick={handleRefresh} disabled={isLoading}>
                 <RefreshIcon fontSize="small" />
@@ -322,6 +330,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ width = 320 }) => {
           </Box>
         </Box>
       )}
+
+      {/* Settings Dialog */}
+      <SettingsDialog
+        open={showSettings}
+        onClose={() => setShowSettings(false)}
+      />
     </Drawer>
   );
 };

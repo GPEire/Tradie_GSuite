@@ -363,26 +363,35 @@
 ### Phase 5: Configuration & Settings (Week 11)
 
 #### Epic 5.1: User Configuration Interface
-- [ ] **TASK-034:** Build scanning configuration UI
-  - Create folder/label selection interface
-  - Implement scanning frequency settings
-  - Build retroactive scanning date range selector
-  - Add email filter configuration
-  - **Priority:** Medium | **Effort:** 3 days
+- [x] **TASK-034:** Build scanning configuration UI ✅
+  - ✅ Create ScanningConfiguration component with comprehensive settings
+  - ✅ Implement folder/label selection interface with autocomplete
+  - ✅ Add scanning frequency settings (realtime, hourly, daily, weekly, manual)
+  - ✅ Build retroactive scanning date range selector with DatePicker
+  - ✅ Add email filter configuration (senders and domains)
+  - ✅ Enable/disable scanning toggle
+  - ✅ Include/exclude label filtering
+  - ✅ Save and reset functionality
+  - **Priority:** Medium | **Effort:** 3 days | **Status:** COMPLETE
 
-- [ ] **TASK-035:** Implement project naming rules configuration
-  - Create project naming convention settings
-  - Build regex pattern input for project identifiers
-  - Add custom project category management
-  - Implement label format preferences
-  - **Priority:** Low | **Effort:** 3 days
+- [x] **TASK-035:** Implement project naming rules configuration ✅
+  - ✅ Create ProjectNamingRules component
+  - ✅ Build regex pattern input for project identifiers
+  - ✅ Add custom project naming rules with enable/disable
+  - ✅ Implement label format preferences with pattern variables
+  - ✅ Rule management (add, remove, toggle)
+  - ✅ Pattern validation with regex testing
+  - ✅ Auto-create labels toggle
+  - **Priority:** Low | **Effort:** 3 days | **Status:** COMPLETE
 
-- [ ] **TASK-036:** Build integration settings UI
-  - Create Google Drive integration toggle
-  - Add Google Contacts sync settings
-  - Implement Calendar integration options
-  - Add external CRM export settings (future)
-  - **Priority:** Low | **Effort:** 3 days
+- [x] **TASK-036:** Build integration settings UI ✅
+  - ✅ Create IntegrationSettings component
+  - ✅ Add Google Drive integration toggle with auto-upload option
+  - ✅ Implement Google Contacts sync settings with auto-sync
+  - ✅ Add Calendar integration toggle (future feature placeholder)
+  - ✅ External CRM export settings placeholder
+  - ✅ Integration status indicators
+  - **Priority:** Low | **Effort:** 3 days | **Status:** COMPLETE
 
 ---
 

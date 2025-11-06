@@ -34,7 +34,6 @@ import { apiClient } from '../services/api';
 import { ProjectAssignmentDialog } from './ProjectAssignmentDialog';
 import { Menu, MenuItem } from '@mui/material';
 import { NotificationService } from '../services/notificationService';
-import { NotificationService } from '../services/notificationService';
 
 interface EmailMetadata {
   id: string;
@@ -91,14 +90,23 @@ export const ProjectEmailView: React.FC<ProjectEmailViewProps> = ({
       // TODO: Replace with actual endpoint when backend implements it
       // For now, we'll fetch emails using Gmail API with project filter
       const data = await apiClient.getProjectEmails(projectId);
-      const loadedEmails = Array.isArray(data) ? data : data.emails || [];
-      setEmails(loadedEmails);
-      
-      // Notify about new emails if we detect them
-      // This would be better handled by watching for changes
-      if (loadedEmails.length > 0) {
-        // Get project name from store or API
-        // NotificationService.notifyNewProjectEmail(...);
+      const emailList = Array.isArray(data) ? data : data.emails || [];
+      setEmails(emailList);
+
+      // Notify about new emails if this is a recent load
+      // In production, this would track which emails have been seen before
+      if (emailList.length > 0 && emails.length === 0) {
+        // First load - could notify about new emails
+        const latestEmail = emailList[0];
+        if (latestEmail) {
+          // Get project name from store or API
+          NotificationService.notifyNewProjectEmail(
+            `Project ${projectId}`, // Would be replaced with actual project name
+            latestEmail.subject || 'New email',
+            projectId,
+            latestEmail.id
+          );
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Failed to load emails');

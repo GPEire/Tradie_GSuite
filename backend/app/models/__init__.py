@@ -9,6 +9,7 @@ from app.models.learning import UserCorrection, ModelFeedback, LearningPattern
 from app.models.scan_config import ScanConfiguration, ScheduledScan
 from app.models.attachment import EmailAttachment, AttachmentProjectMapping
 from app.models.project import Project, EmailProjectMapping
+from app.models.audit_log import AuditLog, AuditActionType
 
 __all__ = [
     "User", "UserRole", "GmailWatch", "NotificationQueue",
@@ -16,6 +17,7 @@ __all__ = [
     "UserCorrection", "ModelFeedback", "LearningPattern",
     "ScanConfiguration", "ScheduledScan",
     "EmailAttachment", "AttachmentProjectMapping",
-    "Project", "EmailProjectMapping"
+    "Project", "EmailProjectMapping",
+    "AuditLog", "AuditActionType"
 ]
 

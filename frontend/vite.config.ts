@@ -26,6 +26,20 @@ export default defineConfig({
         background: resolve(__dirname, 'src/background.ts'),
         content: resolve(__dirname, 'src/content.ts'),
       },
+      output: {
+        entryFileNames: (chunkInfo) => {
+          if (chunkInfo.name === 'sidebar') {
+            return 'sidebar.js';
+          }
+          if (chunkInfo.name === 'content') {
+            return 'content.js';
+          }
+          if (chunkInfo.name === 'background') {
+            return 'background.js';
+          }
+          return '[name].js';
+        },
+      },
     },
   },
 });

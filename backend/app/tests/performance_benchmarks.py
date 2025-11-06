@@ -213,15 +213,7 @@ class PerformanceBenchmarks:
         return summary
 
 
-@pytest.fixture
-def db():
-    """Database session fixture"""
-    from app.database import SessionLocal
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# db fixture is now in conftest.py
 
 
 @pytest.fixture

@@ -5,11 +5,12 @@ TASK-038: Database operations for projects
 
 from typing import List, Optional, Dict, Any
 import logging
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_, func
 from app.dal.base import BaseDAL
 from app.models.project import Project, EmailProjectMapping
 from app.models.user import User
+from app.services.caching import get_query_cache, get_cache
 
 logger = logging.getLogger(__name__)
 
@@ -26,14 +27,30 @@ class ProjectDAL(BaseDAL[Project]):
             )
         ).first()
     
-    def get_user_projects(self, user_id: int, status: Optional[str] = None) -> List[Project]:
+    def get_user_projects(self, user_id: int, status: Optional[str] = None, use_cache: bool = True) -> List[Project]:
         """Get all projects for user, optionally filtered by status"""
+        # Try cache first
+        if use_cache:
+            cache = get_cache()
+            query_cache = get_query_cache()
+            cache_key = query_cache.get_user_projects_key(user_id, status)
+            cached_result = cache.get(cache_key)
+            if cached_result is not None:
+                return cached_result
+        
+        # Database query with eager loading
         query = self.db.query(self.model).filter(self.model.user_id == user_id)
         
         if status:
             query = query.filter(self.model.status == status)
         
-        return query.order_by(self.model.last_email_at.desc().nullslast()).all()
+        result = query.order_by(self.model.last_email_at.desc().nullslast()).all()
+        
+        # Cache result
+        if use_cache:
+            cache.set(cache_key, result, ttl=60)  # Cache for 1 minute
+        
+        return result
     
     def get_projects_needing_review(self, user_id: int) -> List[Project]:
         """Get projects that need review"""
@@ -103,15 +120,37 @@ class EmailProjectMappingDAL(BaseDAL[EmailProjectMapping]):
             )
         ).all()
     
-    def get_project_emails(self, user_id: int, project_id: int) -> List[EmailProjectMapping]:
-        """Get all emails for a project"""
-        return self.db.query(self.model).filter(
+    def get_project_emails(self, user_id: int, project_id: int, limit: Optional[int] = None, offset: int = 0, use_cache: bool = True) -> List[EmailProjectMapping]:
+        """Get all emails for a project with pagination"""
+        # Try cache first
+        if use_cache and limit and offset == 0:
+            cache = get_cache()
+            query_cache = get_query_cache()
+            cache_key = f"{query_cache.get_email_mappings_key(project_id)}:limit:{limit}"
+            cached_result = cache.get(cache_key)
+            if cached_result is not None:
+                return cached_result
+        
+        query = self.db.query(EmailProjectMapping).filter(
             and_(
-                self.model.user_id == user_id,
-                self.model.project_id == project_id,
-                self.model.is_active == True
+                EmailProjectMapping.user_id == user_id,
+                EmailProjectMapping.project_id == project_id,
+                EmailProjectMapping.is_active == True
             )
-        ).order_by(self.model.created_at.desc()).all()
+        ).order_by(EmailProjectMapping.created_at.desc())
+        
+        if offset:
+            query = query.offset(offset)
+        if limit:
+            query = query.limit(limit)
+        
+        result = query.all()
+        
+        # Cache first page
+        if use_cache and limit and offset == 0:
+            cache.set(cache_key, result, ttl=60)
+        
+        return result
     
     def remove_email_from_project(self, user_id: int, project_id: int, email_id: str) -> bool:
         """Remove email from project (deactivate mapping)"""

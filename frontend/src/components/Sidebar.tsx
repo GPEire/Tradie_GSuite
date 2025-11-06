@@ -3,7 +3,7 @@
  * Main sidebar panel for displaying projects
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Box, 
   Drawer, 
@@ -32,6 +32,7 @@ import {
 } from '@mui/icons-material';
 import { useProjectStore } from '../store/projectStore';
 import { ProjectListItem } from './ProjectListItem';
+import { ProjectView } from './ProjectView';
 
 interface SidebarProps {
   width?: number;
@@ -52,6 +53,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ width = 320 }) => {
     refreshProjects,
     selectProject,
   } = useProjectStore();
+
+  const [showProjectView, setShowProjectView] = useState(false);
 
   useEffect(() => {
     loadProjects('active');
@@ -227,6 +230,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ width = 320 }) => {
                   isSelected={selectedProjectId === project.project_id}
                   onClick={() => {
                     selectProject(project.project_id);
+                    setShowProjectView(true);
                     // Notify content script
                     if (window.parent) {
                       window.parent.postMessage({
@@ -255,6 +259,44 @@ export const Sidebar: React.FC<SidebarProps> = ({ width = 320 }) => {
           </Typography>
         </Box>
       </Box>
+
+      {/* Project View Modal/Overlay */}
+      {showProjectView && selectedProjectId && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 1400,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 2,
+          }}
+          onClick={() => setShowProjectView(false)}
+        >
+          <Box
+            sx={{
+              width: '90%',
+              maxWidth: 1200,
+              height: '90%',
+              maxHeight: 800,
+              backgroundColor: 'background.paper',
+              borderRadius: 2,
+              overflow: 'hidden',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ProjectView
+              projectId={selectedProjectId}
+              onClose={() => setShowProjectView(false)}
+            />
+          </Box>
+        </Box>
+      )}
     </Drawer>
   );
 };

@@ -275,32 +275,41 @@
   - **Priority:** High | **Effort:** 4 days | **Status:** COMPLETE
 
 #### Epic 4.2: Project View & Dashboard
-- [ ] **TASK-026:** Build project email view
-  - Display chronological email list
-  - Show email participants, subjects, previews
-  - Implement unread/read status indicators
-  - Add attachment indicators and date/time stamps
-  - **Priority:** High | **Effort:** 5 days
+- [x] **TASK-026:** Build project email view ✅
+  - ✅ Display chronological email list with sorting
+  - ✅ Show email participants, subjects, and previews
+  - ✅ Implement unread/read status indicators
+  - ✅ Add attachment indicators and date/time stamps
+  - ✅ Format dates with relative time (e.g., '2 hours ago')
+  - ✅ Click to open emails in Gmail
+  - **Priority:** High | **Effort:** 5 days | **Status:** COMPLETE
 
-- [ ] **TASK-027:** Implement project dashboard
-  - Create dashboard showing all active projects
-  - Display email activity summary per project
-  - Show recent conversations and pending actions
-  - Build project timeline visualization (future enhancement)
-  - **Priority:** Medium | **Effort:** 4 days
+- [x] **TASK-027:** Implement project dashboard ✅
+  - ✅ Create dashboard showing all active projects
+  - ✅ Display email activity summary per project (total, active, recent)
+  - ✅ Show recent conversations and activity timelines
+  - ✅ Project cards with status, client info, and email counts
+  - ✅ Activity summary cards (total projects, active, emails, recent activity)
+  - ✅ Responsive grid layout
+  - **Priority:** Medium | **Effort:** 4 days | **Status:** COMPLETE
 
-- [ ] **TASK-028:** Build attachment management UI
-  - Create attachment list view per project
-  - Implement attachment preview/download
-  - Add Google Drive links
-  - Display attachment metadata
-  - **Priority:** Medium | **Effort:** 3 days
+- [x] **TASK-028:** Build attachment management UI ✅
+  - ✅ Create attachment list view per project
+  - ✅ Group attachments by file type category
+  - ✅ Display attachment metadata (size, date, type)
+  - ✅ Implement download and Google Drive integration
+  - ✅ File type icons (PDF, images, documents, spreadsheets)
+  - ✅ Show Drive upload status
+  - **Priority:** Medium | **Effort:** 3 days | **Status:** COMPLETE
 
-- [ ] **TASK-029:** Implement client contact view
-  - Display extracted client contacts per project
-  - Show contact information (name, email, phone, company)
-  - Link to Google Contacts integration
-  - **Priority:** Medium | **Effort:** 3 days
+- [x] **TASK-029:** Implement client contact view ✅
+  - ✅ Display extracted client contacts per project
+  - ✅ Show contact information (name, email, phone, company)
+  - ✅ Contact cards with avatars and quick actions
+  - ✅ Email count and last activity per contact
+  - ✅ Quick actions (send email, view in Gmail)
+  - ✅ Integration ready for Google Contacts
+  - **Priority:** Medium | **Effort:** 3 days | **Status:** COMPLETE
 
 #### Epic 4.3: Manual Override & Correction Interface
 - [ ] **TASK-030:** Build manual project assignment UI

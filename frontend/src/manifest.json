@@ -28,7 +28,9 @@
     {
       "matches": ["https://mail.google.com/*"],
       "js": ["content.js"],
-      "css": ["content.css"]
+      "css": ["content.css"],
+      "run_at": "document_idle",
+      "all_frames": false
     }
   ],
   "action": {
@@ -46,7 +48,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["sidebar.html", "sidebar.js", "sidebar.css"],
+      "resources": ["sidebar.html", "sidebar.js", "content.css"],
       "matches": ["https://mail.google.com/*"]
     }
   ]

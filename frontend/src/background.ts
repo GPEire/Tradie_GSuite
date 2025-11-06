@@ -49,6 +49,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse({ status: 'queued' });
       break;
     
+    case 'REFRESH_PROJECTS':
+      // Trigger project refresh
+      // Notify content script to refresh sidebar
+      chrome.tabs.query({ url: 'https://mail.google.com/*' }, (tabs) => {
+        tabs.forEach(tab => {
+          if (tab.id) {
+            chrome.tabs.sendMessage(tab.id, { type: 'REFRESH_PROJECTS' });
+          }
+        });
+      });
+      sendResponse({ status: 'refreshed' });
+      break;
+    
     default:
       sendResponse({ error: 'Unknown message type' });
   }

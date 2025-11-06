@@ -33,6 +33,8 @@ import { formatDistanceToNow, format } from 'date-fns';
 import { apiClient } from '../services/api';
 import { ProjectAssignmentDialog } from './ProjectAssignmentDialog';
 import { Menu, MenuItem } from '@mui/material';
+import { NotificationService } from '../services/notificationService';
+import { NotificationService } from '../services/notificationService';
 
 interface EmailMetadata {
   id: string;
@@ -89,7 +91,15 @@ export const ProjectEmailView: React.FC<ProjectEmailViewProps> = ({
       // TODO: Replace with actual endpoint when backend implements it
       // For now, we'll fetch emails using Gmail API with project filter
       const data = await apiClient.getProjectEmails(projectId);
-      setEmails(Array.isArray(data) ? data : data.emails || []);
+      const loadedEmails = Array.isArray(data) ? data : data.emails || [];
+      setEmails(loadedEmails);
+      
+      // Notify about new emails if we detect them
+      // This would be better handled by watching for changes
+      if (loadedEmails.length > 0) {
+        // Get project name from store or API
+        // NotificationService.notifyNewProjectEmail(...);
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to load emails');
       console.error('Error loading project emails:', err);

@@ -201,6 +201,21 @@ class ApiClient {
     const response = await this.client.post('/api/v1/processing/learning/feedback', feedback);
     return response.data;
   }
+
+  // Notifications API
+  async getNotifications(limit: number = 50) {
+    // TODO: Implement backend endpoint
+    const response = await this.client.get('/api/v1/notifications', {
+      params: { limit },
+    });
+    return response.data;
+  }
+
+  async markNotificationAsRead(notificationId: string) {
+    // TODO: Implement backend endpoint
+    const response = await this.client.patch(`/api/v1/notifications/${notificationId}/read`);
+    return response.data;
+  }
 }
 
 export const apiClient = new ApiClient();

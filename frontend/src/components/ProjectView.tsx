@@ -3,7 +3,7 @@
  * Main container for project details, emails, attachments, and contacts
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Tabs,
@@ -19,10 +19,12 @@ import {
   Person as PersonIcon,
   Dashboard as DashboardIcon,
   Close as CloseIcon,
+  Settings as SettingsIcon,
 } from '@mui/icons-material';
 import { ProjectEmailView } from './ProjectEmailView';
 import { AttachmentManagement } from './AttachmentManagement';
 import { ClientContactView } from './ClientContactView';
+import { ProjectManagementDialog } from './ProjectManagementDialog';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -57,6 +59,21 @@ export const ProjectView: React.FC<ProjectViewProps> = ({
   onClose,
 }) => {
   const [tabValue, setTabValue] = useState(0);
+  const [managementDialogOpen, setManagementDialogOpen] = useState(false);
+  const [projectName, setProjectName] = useState('');
+
+  useEffect(() => {
+    // Load project name
+    const loadProject = async () => {
+      try {
+        const project = await apiClient.getProject(projectId);
+        setProjectName(project.project_name || projectId);
+      } catch (error) {
+        console.error('Error loading project:', error);
+      }
+    };
+    loadProject();
+  }, [projectId]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -66,8 +83,13 @@ export const ProjectView: React.FC<ProjectViewProps> = ({
     <Paper sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', px: 2 }}>
         <Typography variant="h6" sx={{ flex: 1, py: 1 }}>
-          Project Details
+          {projectName || 'Project Details'}
         </Typography>
+        <Tooltip title="Manage Project">
+          <IconButton size="small" onClick={() => setManagementDialogOpen(true)}>
+            <SettingsIcon />
+          </IconButton>
+        </Tooltip>
         {onClose && (
           <Tooltip title="Close">
             <IconButton size="small" onClick={onClose}>
@@ -92,6 +114,20 @@ export const ProjectView: React.FC<ProjectViewProps> = ({
           <ClientContactView projectId={projectId} />
         </TabPanel>
       </Box>
+
+      {/* Project Management Dialog */}
+      <ProjectManagementDialog
+        open={managementDialogOpen}
+        onClose={() => setManagementDialogOpen(false)}
+        projectId={projectId}
+        projectName={projectName}
+        onUpdated={() => {
+          // Reload project name
+          apiClient.getProject(projectId).then((project) => {
+            setProjectName(project.project_name || projectId);
+          });
+        }}
+      />
     </Paper>
   );
 };

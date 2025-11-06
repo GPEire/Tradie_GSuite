@@ -135,6 +135,87 @@ class ApiClient {
     const response = await this.client.get(`/api/v1/scanning/attachments/${emailId}`);
     return response.data;
   }
+
+  // Project Management API
+  async addEmailToProject(projectId: string, emailId: string, threadId?: string, method: string = 'manual') {
+    const response = await this.client.post(`/api/v1/projects/${projectId}/emails`, null, {
+      params: { email_id: emailId, thread_id: threadId, method },
+    });
+    return response.data;
+  }
+
+  async removeEmailFromProject(projectId: string, emailId: string) {
+    // TODO: Implement backend endpoint
+    const response = await this.client.delete(`/api/v1/projects/${projectId}/emails/${emailId}`);
+    return response.data;
+  }
+
+  async updateProject(projectId: string, updates: { project_name?: string; status?: string; address?: string }) {
+    // TODO: Implement backend endpoint
+    const response = await this.client.patch(`/api/v1/projects/${projectId}`, updates);
+    return response.data;
+  }
+
+  async deleteProject(projectId: string) {
+    // TODO: Implement backend endpoint
+    const response = await this.client.delete(`/api/v1/projects/${projectId}`);
+    return response.data;
+  }
+
+  async mergeProjects(sourceProjectId: string, targetProjectId: string) {
+    // TODO: Implement backend endpoint
+    const response = await this.client.post(`/api/v1/projects/${sourceProjectId}/merge`, null, {
+      params: { target_project_id: targetProjectId },
+    });
+    return response.data;
+  }
+
+  async splitProject(projectId: string, emailIds: string[], newProjectName: string) {
+    // TODO: Implement backend endpoint
+    const response = await this.client.post(`/api/v1/projects/${projectId}/split`, {
+      email_ids: emailIds,
+      new_project_name: newProjectName,
+    });
+    return response.data;
+  }
+
+  // Learning/Correction API
+  async recordCorrection(correction: {
+    correction_type: string;
+    original_result: any;
+    corrected_result: any;
+    email_id?: string;
+    project_id?: string;
+    correction_reason?: string;
+  }) {
+    const response = await this.client.post('/api/v1/processing/learning/correction', correction);
+    return response.data;
+  }
+
+  async submitFeedback(feedback: {
+    feedback_type: string;
+    rating?: number;
+    comment?: string;
+    context?: any;
+  }) {
+    const response = await this.client.post('/api/v1/processing/learning/feedback', feedback);
+    return response.data;
+  }
+
+  // Notifications API
+  async getNotifications(limit: number = 50) {
+    // TODO: Implement backend endpoint
+    const response = await this.client.get('/api/v1/notifications', {
+      params: { limit },
+    });
+    return response.data;
+  }
+
+  async markNotificationAsRead(notificationId: string) {
+    // TODO: Implement backend endpoint
+    const response = await this.client.patch(`/api/v1/notifications/${notificationId}/read`);
+    return response.data;
+  }
 }
 
 export const apiClient = new ApiClient();

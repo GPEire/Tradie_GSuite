@@ -27,9 +27,13 @@ import {
   MarkEmailUnread as MarkEmailUnreadIcon,
   Schedule as ScheduleIcon,
   Person as PersonIcon,
+  MoreVert as MoreVertIcon,
 } from '@mui/icons-material';
 import { formatDistanceToNow, format } from 'date-fns';
 import { apiClient } from '../services/api';
+import { ProjectAssignmentDialog } from './ProjectAssignmentDialog';
+import { Menu, MenuItem } from '@mui/material';
+import { NotificationService } from '../services/notificationService';
 
 interface EmailMetadata {
   id: string;
@@ -53,6 +57,13 @@ interface ProjectEmailViewProps {
   onEmailClick?: (emailId: string) => void;
 }
 
+interface EmailMenuItemState {
+  anchorEl: HTMLElement | null;
+  emailId: string | null;
+  emailSubject: string | null;
+  emailFrom: string | null;
+}
+
 export const ProjectEmailView: React.FC<ProjectEmailViewProps> = ({
   projectId,
   onEmailClick,
@@ -60,6 +71,13 @@ export const ProjectEmailView: React.FC<ProjectEmailViewProps> = ({
   const [emails, setEmails] = useState<EmailMetadata[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
+  const [menuState, setMenuState] = useState<EmailMenuItemState>({
+    anchorEl: null,
+    emailId: null,
+    emailSubject: null,
+    emailFrom: null,
+  });
 
   useEffect(() => {
     loadEmails();
@@ -72,7 +90,24 @@ export const ProjectEmailView: React.FC<ProjectEmailViewProps> = ({
       // TODO: Replace with actual endpoint when backend implements it
       // For now, we'll fetch emails using Gmail API with project filter
       const data = await apiClient.getProjectEmails(projectId);
-      setEmails(Array.isArray(data) ? data : data.emails || []);
+      const emailList = Array.isArray(data) ? data : data.emails || [];
+      setEmails(emailList);
+
+      // Notify about new emails if this is a recent load
+      // In production, this would track which emails have been seen before
+      if (emailList.length > 0 && emails.length === 0) {
+        // First load - could notify about new emails
+        const latestEmail = emailList[0];
+        if (latestEmail) {
+          // Get project name from store or API
+          NotificationService.notifyNewProjectEmail(
+            `Project ${projectId}`, // Would be replaced with actual project name
+            latestEmail.subject || 'New email',
+            projectId,
+            latestEmail.id
+          );
+        }
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to load emails');
       console.error('Error loading project emails:', err);
@@ -117,6 +152,29 @@ export const ProjectEmailView: React.FC<ProjectEmailViewProps> = ({
       // Default: Open email in Gmail
       window.open(`https://mail.google.com/mail/u/0/#inbox/${emailId}`, '_blank');
     }
+  };
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, email: EmailMetadata) => {
+    setMenuState({
+      anchorEl: event.currentTarget,
+      emailId: email.id,
+      emailSubject: email.subject,
+      emailFrom: email.from_address.email,
+    });
+  };
+
+  const handleMenuClose = () => {
+    setMenuState({
+      anchorEl: null,
+      emailId: null,
+      emailSubject: null,
+      emailFrom: null,
+    });
+  };
+
+  const handleAssignToProject = () => {
+    handleMenuClose();
+    setAssignmentDialogOpen(true);
   };
 
   if (isLoading) {
@@ -240,17 +298,61 @@ export const ProjectEmailView: React.FC<ProjectEmailViewProps> = ({
                 }
               />
               <ListItemSecondaryAction>
-                <Tooltip title={formatEmailDate(email.date || email.internal_date)}>
-                  <IconButton edge="end" size="small">
-                    <ScheduleIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
+                <Box sx={{ display: 'flex', gap: 0.5 }}>
+                  <Tooltip title={formatEmailDate(email.date || email.internal_date)}>
+                    <IconButton edge="end" size="small">
+                      <ScheduleIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="More options">
+                    <IconButton
+                      edge="end"
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMenuOpen(e, email);
+                      }}
+                    >
+                      <MoreVertIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
               </ListItemSecondaryAction>
             </ListItem>
             {index < sortedEmails.length - 1 && <Divider />}
           </React.Fragment>
         ))}
       </List>
+
+      {/* Email Menu */}
+      <Menu
+        anchorEl={menuState.anchorEl}
+        open={Boolean(menuState.anchorEl)}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={handleAssignToProject}>
+          Assign to Project...
+        </MenuItem>
+        <MenuItem onClick={handleMenuClose}>
+          Remove from Project
+        </MenuItem>
+      </Menu>
+
+      {/* Assignment Dialog */}
+      <ProjectAssignmentDialog
+        open={assignmentDialogOpen}
+        onClose={() => setAssignmentDialogOpen(false)}
+        emailId={menuState.emailId || ''}
+        emailSubject={menuState.emailSubject || undefined}
+        emailFrom={menuState.emailFrom || undefined}
+        currentProjectId={projectId}
+        onAssigned={() => {
+          loadEmails();
+        }}
+        onRemoved={() => {
+          loadEmails();
+        }}
+      />
     </Paper>
   );
 };

@@ -7,6 +7,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { Sidebar } from './components/Sidebar';
+import { NotificationToast } from './components/NotificationToast';
 
 // Create Material-UI theme with Gmail-like styling
 const theme = createTheme({
@@ -95,6 +96,7 @@ if (rootElement) {
       <ThemeProvider theme={activeTheme}>
         <CssBaseline />
         <Sidebar />
+        <NotificationToast />
       </ThemeProvider>
     </React.StrictMode>
   );

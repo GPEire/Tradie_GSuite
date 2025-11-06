@@ -33,6 +33,8 @@ import {
 import { useProjectStore } from '../store/projectStore';
 import { ProjectListItem } from './ProjectListItem';
 import { ProjectView } from './ProjectView';
+import { NotificationCenter } from './NotificationCenter';
+import { useProjectNotifications } from '../hooks/useProjectNotifications';
 
 interface SidebarProps {
   width?: number;
@@ -55,10 +57,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ width = 320 }) => {
   } = useProjectStore();
 
   const [showProjectView, setShowProjectView] = useState(false);
+  const { notifyLowConfidence } = useProjectNotifications();
 
   useEffect(() => {
     loadProjects('active');
   }, [loadProjects]);
+
+  // Monitor for low confidence projects and notify
+  useEffect(() => {
+    projects.forEach((project) => {
+      if (project.needs_review && project.confidence_score) {
+        const confidence = parseFloat(project.confidence_score);
+        if (confidence < 0.7 && confidence > 0) {
+          // Only notify for low confidence projects
+          // In production, this should track which projects have been notified
+          notifyLowConfidence(
+            project.project_id,
+            project.project_name,
+            confidence
+          );
+        }
+      }
+    });
+  }, [projects, notifyLowConfidence]);
 
   // Filter projects based on search query
   const filteredProjects = projects.filter((project) => {
@@ -252,11 +273,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ width = 320 }) => {
             borderTop: '1px solid',
             borderColor: 'divider',
             backgroundColor: 'background.default',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
           }}
         >
-          <Typography variant="caption" color="text.secondary" align="center" display="block">
+          <Typography variant="caption" color="text.secondary">
             {sortedProjects.length} project{sortedProjects.length !== 1 ? 's' : ''}
           </Typography>
+          <NotificationCenter />
         </Box>
       </Box>
 

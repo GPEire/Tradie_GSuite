@@ -19,6 +19,7 @@ from app.api.project import router as project_router
 from app.api.processing import router as processing_router
 from app.api.scanning import router as scanning_router
 from app.api.project_detection import router as project_detection_router
+from app.api.data_export import router as data_export_router
 
 # Load environment variables
 load_dotenv()
@@ -62,6 +63,7 @@ app.include_router(project_router)
 app.include_router(processing_router)
 app.include_router(scanning_router)
 app.include_router(project_detection_router)
+app.include_router(data_export_router)
 
 @app.get("/")
 async def root():

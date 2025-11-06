@@ -10,8 +10,7 @@ from sqlalchemy import and_, func
 import logging
 from app.models.project import Project, EmailProjectMapping
 from app.models.ai_processing import AIProcessingQueue
-from app.services.email_scanning import EmailScanningService
-from app.services.gmail import GmailService
+from app.services.gmail import GmailService, get_gmail_service
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +22,7 @@ class IncrementalProcessingService:
         """Initialize incremental processing service"""
         self.user = user
         self.db = db
-        self.gmail_service = GmailService(user, db)
-        self.scanning_service = EmailScanningService(user, db)
+        self.gmail_service = get_gmail_service(user, db)
     
     def process_incremental(
         self,

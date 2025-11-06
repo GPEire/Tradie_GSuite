@@ -214,6 +214,36 @@ class PerformanceBenchmarks:
 
 
 @pytest.fixture
+def db():
+    """Database session fixture"""
+    from app.database import SessionLocal
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+@pytest.fixture
+def test_user(db: Session) -> User:
+    """Create test user"""
+    from app.models.user import User, UserRole
+    user = User(
+        email="test_benchmark@example.com",
+        name="Benchmark User",
+        role=UserRole.USER,
+        is_active=True
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    yield user
+    # Cleanup
+    db.delete(user)
+    db.commit()
+
+
+@pytest.fixture
 def benchmark_instance(db: Session, test_user: User) -> PerformanceBenchmarks:
     """Create benchmark instance"""
     return PerformanceBenchmarks(db, test_user)

@@ -20,11 +20,22 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.fixture
+def db():
+    """Database session fixture"""
+    from app.database import SessionLocal
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+@pytest.fixture
 def test_user(db: Session) -> User:
     """Create test user"""
     from app.models.user import User, UserRole
     user = User(
-        email="test@example.com",
+        email="test_scalability@example.com",
         name="Test User",
         role=UserRole.USER,
         is_active=True
@@ -32,7 +43,10 @@ def test_user(db: Session) -> User:
     db.add(user)
     db.commit()
     db.refresh(user)
-    return user
+    yield user
+    # Cleanup
+    db.delete(user)
+    db.commit()
 
 
 @pytest.fixture

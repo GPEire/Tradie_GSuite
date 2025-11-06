@@ -216,6 +216,60 @@ class ApiClient {
     const response = await this.client.patch(`/api/v1/notifications/${notificationId}/read`);
     return response.data;
   }
+
+  // Configuration API
+  async getScanConfiguration() {
+    const response = await this.client.get('/api/v1/scanning/config');
+    return response.data;
+  }
+
+  async updateScanConfiguration(config: any) {
+    const response = await this.client.put('/api/v1/scanning/config', config);
+    return response.data;
+  }
+
+  async getGmailLabels() {
+    const response = await this.client.get('/api/v1/gmail/labels');
+    return response.data;
+  }
+
+  async getProjectNamingConfig() {
+    // TODO: Implement backend endpoint
+    try {
+      const response = await this.client.get('/api/v1/config/project-naming');
+      return response.data;
+    } catch {
+      return { rules: [], label_format: 'project_{name}', auto_create_labels: true };
+    }
+  }
+
+  async updateProjectNamingConfig(config: any) {
+    // TODO: Implement backend endpoint
+    const response = await this.client.put('/api/v1/config/project-naming', config);
+    return response.data;
+  }
+
+  async getIntegrationSettings() {
+    // TODO: Implement backend endpoint
+    try {
+      const response = await this.client.get('/api/v1/config/integrations');
+      return response.data;
+    } catch {
+      return {
+        google_drive_enabled: false,
+        google_contacts_enabled: false,
+        calendar_enabled: false,
+        drive_auto_upload: false,
+        contacts_auto_sync: false,
+      };
+    }
+  }
+
+  async updateIntegrationSettings(settings: any) {
+    // TODO: Implement backend endpoint
+    const response = await this.client.put('/api/v1/config/integrations', settings);
+    return response.data;
+  }
 }
 
 export const apiClient = new ApiClient();

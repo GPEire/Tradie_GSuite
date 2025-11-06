@@ -118,6 +118,23 @@ class ApiClient {
     });
     return response.data;
   }
+
+  // Project Emails API
+  async getProjectEmails(projectId: string) {
+    const response = await this.client.get(`/api/v1/projects/${projectId}/emails`);
+    return response.data;
+  }
+
+  // Attachments API
+  async getProjectAttachments(projectId: string) {
+    const response = await this.client.get(`/api/v1/scanning/attachments/project/${projectId}`);
+    return response.data;
+  }
+
+  async getEmailAttachments(emailId: string) {
+    const response = await this.client.get(`/api/v1/scanning/attachments/${emailId}`);
+    return response.data;
+  }
 }
 
 export const apiClient = new ApiClient();

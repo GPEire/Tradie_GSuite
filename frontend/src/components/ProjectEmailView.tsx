@@ -305,6 +305,36 @@ export const ProjectEmailView: React.FC<ProjectEmailViewProps> = ({
           </React.Fragment>
         ))}
       </List>
+
+      {/* Email Menu */}
+      <Menu
+        anchorEl={menuState.anchorEl}
+        open={Boolean(menuState.anchorEl)}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={handleAssignToProject}>
+          Assign to Project...
+        </MenuItem>
+        <MenuItem onClick={handleMenuClose}>
+          Remove from Project
+        </MenuItem>
+      </Menu>
+
+      {/* Assignment Dialog */}
+      <ProjectAssignmentDialog
+        open={assignmentDialogOpen}
+        onClose={() => setAssignmentDialogOpen(false)}
+        emailId={menuState.emailId || ''}
+        emailSubject={menuState.emailSubject || undefined}
+        emailFrom={menuState.emailFrom || undefined}
+        currentProjectId={projectId}
+        onAssigned={() => {
+          loadEmails();
+        }}
+        onRemoved={() => {
+          loadEmails();
+        }}
+      />
     </Paper>
   );
 };

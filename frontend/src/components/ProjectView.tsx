@@ -25,6 +25,7 @@ import { ProjectEmailView } from './ProjectEmailView';
 import { AttachmentManagement } from './AttachmentManagement';
 import { ClientContactView } from './ClientContactView';
 import { ProjectManagementDialog } from './ProjectManagementDialog';
+import { apiClient } from '../services/api';
 
 interface TabPanelProps {
   children?: React.ReactNode;

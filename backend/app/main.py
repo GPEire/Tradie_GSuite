@@ -20,6 +20,8 @@ from app.api.processing import router as processing_router
 from app.api.scanning import router as scanning_router
 from app.api.project_detection import router as project_detection_router
 from app.api.data_export import router as data_export_router
+from app.api.audit import router as audit_router
+from app.middleware.audit_middleware import AuditMiddleware
 
 # Load environment variables
 load_dotenv()
@@ -53,6 +55,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Audit logging middleware
+app.add_middleware(AuditMiddleware)
+
 # Include API routers
 app.include_router(auth_router)
 app.include_router(users_router)
@@ -64,6 +69,7 @@ app.include_router(processing_router)
 app.include_router(scanning_router)
 app.include_router(project_detection_router)
 app.include_router(data_export_router)
+app.include_router(audit_router)
 
 @app.get("/")
 async def root():
